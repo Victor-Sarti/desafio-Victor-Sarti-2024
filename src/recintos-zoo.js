@@ -19,9 +19,66 @@ class RecintosZoo {
       };
     }
   
-    // Método principal para analisar recintos viáveis
     analisaRecintos(especie, quantidade) {
-      // Validações e lógica aqui
+      if (!this.animaisPermitidos[especie]) {
+        return { erro: 'Animal inválido' };
+      }
+    
+      if (quantidade <= 0 || !Number.isInteger(quantidade)) {
+        return { erro: 'Quantidade inválida' };
+      }
+    
+      const animalInfo = this.animaisPermitidos[especie];
+      const tamanhoNecessario = quantidade * animalInfo.tamanho;
+      const recintosViaveis = [];
+    
+      for (let recinto of this.recintos) {
+        // Validação do bioma
+        if (!animalInfo.biomas.includes(recinto.bioma) && !(animalInfo.biomas.length > 1 && recinto.bioma === 'savana e rio')) {
+          continue;
+        }
+    
+        // Cálculo do espaço ocupado e livre
+        let espacoOcupado = recinto.animais.reduce((acc, a) => acc + a.quantidade * this.animaisPermitidos[a.especie].tamanho, 0);
+        let espacoLivre = recinto.tamanho - espacoOcupado;
+    
+        // Regra do espaço extra quando há mais de uma espécie
+        const maisDeUmaEspecie = recinto.animais.length > 0 && !recinto.animais.some(a => a.especie === especie);
+        if (maisDeUmaEspecie) {
+          espacoLivre -= 1; // Espaço extra necessário
+        }
+    
+        // Regra dos carnívoros (somente com a própria espécie)
+        if (animalInfo.carnivoro && recinto.animais.some(a => a.especie !== especie)) {
+          continue;
+        }
+    
+        // Regra dos hipopótamos (somente toleram outras espécies em savana e rio)
+        if (especie === 'HIPOPOTAMO' && recinto.bioma !== 'savana e rio' && recinto.animais.length > 0) {
+          continue;
+        }
+    
+        // Regra dos macacos (não ficam confortáveis sozinhos)
+        if (especie === 'MACACO' && quantidade === 1 && recinto.animais.length === 0) {
+          continue;
+        }
+    
+        // Regra de manter o conforto dos animais existentes
+        const espacoNecessarioComInclusao = tamanhoNecessario + (maisDeUmaEspecie ? 1 : 0);
+        if (espacoNecessarioComInclusao <= espacoLivre) {
+          recintosViaveis.push(`Recinto ${recinto.numero} (espaço livre: ${espacoLivre - espacoNecessarioComInclusao} total: ${recinto.tamanho})`);
+        }
+      }
+    
+      // Retorno dos resultados
+      if (recintosViaveis.length > 0) {
+        return { recintosViaveis };
+      } else {
+        return { erro: 'Não há recinto viável' };
+      }
     }
+  
+    
+  
   }
   
