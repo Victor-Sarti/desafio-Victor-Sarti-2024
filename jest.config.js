@@ -1,9 +1,8 @@
+// jest.config.js
 export default {
   transform: {
-    '^.+\\.js$': 'babel-jest', // Transforma arquivos .js usando Babel
+    '^.+\\.js$': 'babel-jest',
   },
   testEnvironment: 'node',
-  moduleNameMapper: {
-    '^(\\.{1,2}/.*)\\.js$': '$1', // Resolve caminhos relativos
-  },
+  
 };
